@@ -25,6 +25,9 @@
     <OutputPath>..\..\..\..\..\bin\AnyCPU\Release\Test\.NETPortable\v5.0\Microsoft.Test.OData.Framework.NetStandard\</OutputPath>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Build.props))\Build.props" />
+  <PropertyGroup>
+    <NuGetTargetMoniker>.NETStandard,Version=v1.1</NuGetTargetMoniker>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\src\Microsoft.OData.Client\Build.NetStandard\Microsoft.OData.Client.NetStandard.csproj">
       <Project>{2B869CE6-ECFB-4B14-A5B3-E4169DEAC0EB}</Project>

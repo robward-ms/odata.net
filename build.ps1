@@ -168,6 +168,20 @@ Function GetDlls
     return $dlls
 }
 
+Function TestForDlls
+{
+    $dlls = GetDlls
+    ForEach ($dll in $dlls)
+    {
+        if (-not (Test-Path $dll))
+        {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 Function SkipStrongName
 {
     $SnLog = $LOGDIR + "\SkipStrongName.log"
@@ -516,15 +530,23 @@ if (! (Test-Path $LOGDIR))
 
 if ($TestType -eq 'SkipStrongName')
 {
-    CleanBeforeScorch 
-    BuildProcess
+    $dllsExist = TestForDlls
+    if (!$dllsExist)
+    {
+        CleanBeforeScorch 
+        BuildProcess
+    }
     SkipStrongName
     Exit
 }
 elseif ($TestType -eq 'DisableSkipStrongName')
 {
-    CleanBeforeScorch 
-    BuildProcess
+    $dllsExist = TestForDlls
+    if (!$dllsExist)
+    {
+        CleanBeforeScorch 
+        BuildProcess
+    }
     DisableSkipStrongName
     Exit
 }

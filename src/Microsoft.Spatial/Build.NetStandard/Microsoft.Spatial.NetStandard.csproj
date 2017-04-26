@@ -22,6 +22,9 @@
   </PropertyGroup>
   <!-- References -->
   <Import Project="..\..\Build.props" />
+  <PropertyGroup>
+    <NuGetTargetMoniker>.NETStandard,Version=v1.1</NuGetTargetMoniker>
+  </PropertyGroup>
   <!-- Generated files -->
   <ItemGroup>
     <TextStringResource Include="..\Microsoft.Spatial.txt">

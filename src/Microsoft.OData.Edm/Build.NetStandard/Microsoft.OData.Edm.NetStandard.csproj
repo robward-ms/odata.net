@@ -35,6 +35,9 @@
     <OutputPath>..\..\..\bin\AnyCPU\Cover\Product\.NETPortable\v5.0\Microsoft.OData.Edm\</OutputPath>
   </PropertyGroup>
   <Import Project="..\..\Build.props" />
+  <PropertyGroup>
+    <NuGetTargetMoniker>.NETStandard,Version=v1.1</NuGetTargetMoniker>
+  </PropertyGroup>
   <!-- Generated files -->
   <ItemGroup>
     <TextStringResource Include="..\Microsoft.OData.Edm.txt">

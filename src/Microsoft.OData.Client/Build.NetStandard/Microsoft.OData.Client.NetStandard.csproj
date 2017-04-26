@@ -29,6 +29,9 @@
     <OutputPath>..\..\..\bin\AnyCPU\Cover\Product\.NETPortable\v5.0\Microsoft.OData.Client.NetStandard\</OutputPath>
   </PropertyGroup>
   <Import Project="..\..\Build.props" />
+  <PropertyGroup>
+    <NuGetTargetMoniker>.NETStandard,Version=v1.1</NuGetTargetMoniker>
+  </PropertyGroup>
   <!-- References -->
   <ItemGroup>
     <ProjectReference Include="$(EnlistmentRoot)\src\Microsoft.Spatial\Build.NetStandard\Microsoft.Spatial.NetStandard.csproj">
