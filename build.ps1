@@ -115,7 +115,7 @@ ForEach($dll in $AdditionalNightlyTestDlls)
 }
 
 $NightlyTestSuite = $RollingTestSuite
-ForEach ($test in $AddtionalNightlyTestSuite)
+ForEach ($test in $AdditionalNightlyTestSuite)
 {
     $NightlyTestSuite += $test
 }
@@ -371,6 +371,7 @@ Function TestSummary
     
     $file = Get-Content -Path $TESTLOG
     $pass = 0
+    $skipped = 0
     $fail = 0
     $trxfile = New-Object -TypeName System.Collections.ArrayList
     $failedtest1 = New-Object -TypeName System.Collections.ArrayList
@@ -382,6 +383,10 @@ Function TestSummary
         if ($line -match "^Passed.*") 
         {
             $pass = $pass + 1
+        }
+        elseif ($line -match "^Skipped.*") 
+        {
+            $skipped = $skipped + 1
         }
         elseif ($line -match "^Failed\s+(.*)")
         {
@@ -404,6 +409,12 @@ Function TestSummary
 
     Write-Host "Test summary:" -ForegroundColor $Success
     Write-Host "Passed :`t$pass"  -ForegroundColor $Success
+
+    if ($skipped -ne 0)
+    {
+        Write-Host "Skipped:`t$skipped"  -ForegroundColor $Warning
+    }
+
     $color = $Success
     if ($fail -ne 0)
     {
