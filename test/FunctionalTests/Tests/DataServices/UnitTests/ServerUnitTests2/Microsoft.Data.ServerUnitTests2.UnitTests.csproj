@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <AssemblyAttributeClsCompliant>false</AssemblyAttributeClsCompliant>
@@ -21,11 +21,12 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
-    <Reference Include="$(NugetPack)\EntityFramework.4.3.1\lib\net40\EntityFramework.dll" />
+    <Reference Include="$(NugetPack)\EntityFramework.5.0.0\lib\net45\EntityFramework.dll" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.Numerics" />
@@ -37,7 +38,6 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data.Linq" />
     <ProjectReference Include="..\..\Models\EFFK\Astoria.EFFKModel.csproj">
       <Project>{3C8CB60D-D2C0-495E-A8D2-C8B1B244F27B}</Project>

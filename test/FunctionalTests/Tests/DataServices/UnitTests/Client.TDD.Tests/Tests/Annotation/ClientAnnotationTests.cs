@@ -1082,7 +1082,7 @@ namespace Microsoft.OData.Client.TDDUnitTests.Tests.Annotation
         }
 
         [TestMethod]
-        public void TesDuplicateAnnotationsOnPropertyThrows()
+        public void TestDuplicateAnnotationsOnPropertyThrows()
         {
             string response = @"{
 	""@odata.context"":""http://odataService/$metadata#People('Adrian')/Location"",
