@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Versioning.props" />
+  <Target Name="Build">
+    <Message Importance="high" Text="##vso[task.setvariable variable=VersionNuGetSemantic]$(VersionNuGetSemantic)" />
+  </Target>
+</Project>
