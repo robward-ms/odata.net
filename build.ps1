@@ -74,7 +74,7 @@ $NETCORETESTDIR = $ENLISTMENT_ROOT + "\bin\AnyCPU\$Configuration\Test\.NETPortab
 $PRODUCTDIR = $ENLISTMENT_ROOT + "\bin\AnyCPU\$Configuration\Product\Desktop"
 $NUGETEXE = $ENLISTMENT_ROOT + "\sln\.nuget\NuGet.exe"
 $NUGETPACK = $ENLISTMENT_ROOT + "\sln\packages"
-$XUNITADAPTER = "/TestAdapterPath:" + $NUGETPACK + "\xunit.runner.visualstudio.2.1.0\build\_common"
+$XUNITADAPTER = "/TestAdapterPath:" + $NUGETPACK + "\xunit.runner.visualstudio.2.2.0\build\_common"
 
 $NugetRestoreSolutions = "OData.NetStandard.sln"
 
