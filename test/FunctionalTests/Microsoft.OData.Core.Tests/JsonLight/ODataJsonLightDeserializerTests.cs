@@ -781,6 +781,55 @@ namespace Microsoft.OData.Tests.JsonLight
             action.ShouldThrow<ODataException>().WithMessage("Value '123456789' was either too large or too small for a 'NS.UInt16'.");
         }
 
+        #region Top level property
+
+        [Fact]
+        public void TopLevelPropertyShouldReadProperty()
+        {
+            var model = this.CreateEdmModelWithEntity();
+            var primitiveTypeRef = ((IEdmEntityType)model.SchemaElements.First()).Properties().First().Type;
+            this.messageReaderSettings = new ODataMessageReaderSettings();
+            ODataJsonLightPropertyAndValueDeserializer deserializer = new ODataJsonLightPropertyAndValueDeserializer(this.CreateJsonLightInputContext("{\"@odata.context\":\"http://odata.org/test/$metadata#Customers(1)/Name\",\"value\":\"Joe\"}", model));
+            ODataProperty property = deserializer.ReadTopLevelProperty(primitiveTypeRef);
+            TestUtils.AssertODataValueAreEqual(new ODataPrimitiveValue("Joe"), property.ODataValue);
+        }
+
+        [Fact]
+        public void TopLevelPropertyShouldReadNullProperty()
+        {
+            var model = this.CreateEdmModelWithEntity();
+            var primitiveTypeRef = ((IEdmEntityType)model.SchemaElements.First()).Properties().First().Type;
+            this.messageReaderSettings = new ODataMessageReaderSettings();
+            ODataJsonLightPropertyAndValueDeserializer deserializer = new ODataJsonLightPropertyAndValueDeserializer(this.CreateJsonLightInputContext("{\"@odata.context\":\"http://odata.org/test/$metadata#Customers(1)/Name\",\"value\":null}", model));
+            ODataProperty property = deserializer.ReadTopLevelProperty(primitiveTypeRef);
+            TestUtils.AssertODataValueAreEqual(new ODataNullValue(), property.ODataValue);
+        }
+
+        [Fact]
+        public void TopLevelPropertyShouldRead6xNullProperty()
+        {
+            var model = this.CreateEdmModelWithEntity();
+            var primitiveTypeRef = ((IEdmEntityType)model.SchemaElements.First()).Properties().First().Type;
+            this.messageReaderSettings = new ODataMessageReaderSettings();
+            this.messageReaderSettings.LibraryCompatibility = ODataLibraryCompatibility.Version6;
+            ODataJsonLightPropertyAndValueDeserializer deserializer = new ODataJsonLightPropertyAndValueDeserializer(this.CreateJsonLightInputContext("{\"@odata.context\":\"http://odata.org/test/$metadata#Customers(1)/Name\",\"@odata.null\":true}", model));
+            ODataProperty property = deserializer.ReadTopLevelProperty(primitiveTypeRef);
+            TestUtils.AssertODataValueAreEqual(new ODataNullValue(), property.ODataValue);
+        }
+
+        [Fact]
+        public void TopLevelPropertyShouldThrowOn6xNullProperty()
+        {
+            var model = this.CreateEdmModelWithEntity();
+            var primitiveTypeRef = ((IEdmEntityType)model.SchemaElements.First()).Properties().First().Type;
+            this.messageReaderSettings = new ODataMessageReaderSettings();
+            ODataJsonLightPropertyAndValueDeserializer deserializer = new ODataJsonLightPropertyAndValueDeserializer(this.CreateJsonLightInputContext("{\"@odata.context\":\"http://odata.org/test/$metadata#Customers(1)/Name\",\"@odata.null\":true}", model));
+            Action action = () => deserializer.ReadTopLevelProperty(primitiveTypeRef);
+            action.ShouldThrow<ODataException>().WithMessage(ErrorStrings.ODataJsonLightPropertyAndValueDeserializer_InvalidTopLevelPropertyPayload);
+        }
+
+        #endregion
+
         #region Top level property instance annotation
 
         [Fact]
