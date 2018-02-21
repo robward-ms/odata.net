@@ -73,7 +73,13 @@ namespace Microsoft.OData
             this.EnableCharactersCheck = false;
             this.Validations = ValidationKinds.All;
             this.Validator = new WriterValidator(this);
+            this.LibraryCompatibility = ODataLibraryCompatibility.Latest;
         }
+
+        /// <summary>
+        /// Gets or sets library compatibility version. Default value is <see cref="T:ODataLibraryCompatibilityLevel.Latest"/>,
+        /// </summary>
+        public ODataLibraryCompatibility LibraryCompatibility {get; set;}
 
         /// <summary>
         /// Gets or sets validations to perform. Default value is <see cref="T:Microsoft.OData.Validations.FullValidation"/>,
@@ -91,6 +97,7 @@ namespace Microsoft.OData
                 ThrowIfTypeConflictsWithMetadata = (validations & ValidationKinds.ThrowIfTypeConflictsWithMetadata) != 0;
                 ThrowOnDuplicatePropertyNames = (validations & ValidationKinds.ThrowOnDuplicatePropertyNames) != 0;
                 ThrowOnUndeclaredPropertyForNonOpenType = (validations & ValidationKinds.ThrowOnUndeclaredPropertyForNonOpenType) != 0;
+                ThrowOnTopLevelNullProperty = (validations & ValidationKinds.ThrowOnTopLevelNullProperty) != 0;
             }
         }
 
@@ -181,6 +188,11 @@ namespace Microsoft.OData
         /// Returns whether ThrowOnUndeclaredPropertyForNonOpenType validation setting is enabled.
         /// </summary>
         internal bool ThrowOnUndeclaredPropertyForNonOpenType { get; private set; }
+
+        /// <summary>
+        /// Returns whether ThrowOnTopLevelNullProperty validation setting is enabled.
+        /// </summary>
+        internal bool ThrowOnTopLevelNullProperty { get; private set; }
 
         /// <summary>
         /// The acceptable media types used to determine the content type of the message.
@@ -398,11 +410,13 @@ namespace Microsoft.OData
             this.shouldIncludeAnnotation = other.shouldIncludeAnnotation;
             this.useFormat = other.useFormat;
             this.Version = other.Version;
+            this.LibraryCompatibility = other.LibraryCompatibility;
 
             this.validations = other.validations;
             this.ThrowIfTypeConflictsWithMetadata = other.ThrowIfTypeConflictsWithMetadata;
             this.ThrowOnDuplicatePropertyNames = other.ThrowOnDuplicatePropertyNames;
             this.ThrowOnUndeclaredPropertyForNonOpenType = other.ThrowOnUndeclaredPropertyForNonOpenType;
+            this.ThrowOnTopLevelNullProperty = other.ThrowOnTopLevelNullProperty;
         }
     }
 }

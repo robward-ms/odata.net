@@ -37,6 +37,16 @@ namespace Microsoft.OData
         ThrowIfTypeConflictsWithMetadata = 4,
 
         /// <summary>
+        /// Validates that top level properties cannot be null. If a top level property is null,
+        /// the response should be 204 (NoContent) per the spec: 
+        /// 11.2.3 Requesting Individual Properties
+        /// ...
+        /// If the property is single-valued and has the null value, the service responds with 204 No Content.
+        /// ...
+        /// </summary>
+        ThrowOnTopLevelNullProperty = 8,
+
+        /// <summary>
         /// Enable all validations.
         /// </summary>
         All = ~0

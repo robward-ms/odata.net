@@ -3966,6 +3966,11 @@ public enum Microsoft.OData.ODataDeltaReaderState : int {
 	Start = 0
 }
 
+public enum Microsoft.OData.ODataLibraryCompatibility : int {
+	Latest = 2147483647
+	Version6 = 0
+}
+
 public enum Microsoft.OData.ODataNullValueBehaviorKind : int {
 	Default = 0
 	DisableValidation = 2
@@ -4048,6 +4053,7 @@ public enum Microsoft.OData.ValidationKinds : int {
 	None = 0
 	ThrowIfTypeConflictsWithMetadata = 4
 	ThrowOnDuplicatePropertyNames = 1
+	ThrowOnTopLevelNullProperty = 8
 	ThrowOnUndeclaredPropertyForNonOpenType = 2
 }
 
@@ -5083,6 +5089,7 @@ public sealed class Microsoft.OData.ODataMessageReaderSettings {
 	bool EnableCharactersCheck  { public get; public set; }
 	bool EnableMessageStreamDisposal  { public get; public set; }
 	bool EnablePrimitiveTypeConversion  { public get; public set; }
+	Microsoft.OData.ODataLibraryCompatibility LibraryCompatibility  { public get; public set; }
 	Microsoft.OData.ODataVersion MaxProtocolVersion  { public get; public set; }
 	Microsoft.OData.ODataMessageQuotas MessageQuotas  { public get; public set; }
 	System.Func`3[[System.Object],[System.String],[Microsoft.OData.Edm.IEdmTypeReference]] PrimitiveTypeResolver  { public get; public set; }
@@ -5167,6 +5174,7 @@ public sealed class Microsoft.OData.ODataMessageWriterSettings {
 	bool EnableCharactersCheck  { public get; public set; }
 	bool EnableMessageStreamDisposal  { public get; public set; }
 	string JsonPCallback  { public get; public set; }
+	Microsoft.OData.ODataLibraryCompatibility LibraryCompatibility  { public get; public set; }
 	Microsoft.OData.ODataMessageQuotas MessageQuotas  { public get; public set; }
 	Microsoft.OData.ODataUri ODataUri  { public get; public set; }
 	Microsoft.OData.ValidationKinds Validations  { public get; public set; }
