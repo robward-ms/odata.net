@@ -47,7 +47,8 @@ namespace Microsoft.OData.JsonLight
                 this.JsonWriter.StartObjectScope();
 
                 // "@odata.context":...
-                this.WriteContextUriProperty(ODataPayloadKind.Collection, () => ODataContextUrlInfo.Create(collectionStart.SerializationInfo, itemTypeReference));
+                this.WriteContextUriProperty(ODataPayloadKind.Collection, () =>
+                    ODataContextUrlInfo.Create(collectionStart.SerializationInfo, itemTypeReference));
 
                 // "@odata.count":...
                 if (collectionStart.Count.HasValue)

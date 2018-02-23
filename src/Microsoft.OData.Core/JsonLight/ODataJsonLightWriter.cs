@@ -789,10 +789,11 @@ namespace Microsoft.OData.JsonLight
                 if (containedEntitySet != null)
                 {
                     ODataContextUrlInfo info = ODataContextUrlInfo.Create(
-                                                this.CurrentScope.NavigationSource,
-                                                this.CurrentScope.ResourceType.FullTypeName(),
-                                                containedEntitySet.NavigationProperty.Type.TypeKind() != EdmTypeKind.Collection,
-                                                this.CurrentScope.ODataUri);
+                        this.jsonLightOutputContext.MessageWriterSettings,
+                        this.CurrentScope.NavigationSource,
+                        this.CurrentScope.ResourceType.FullTypeName(),
+                        containedEntitySet.NavigationProperty.Type.TypeKind() != EdmTypeKind.Collection,
+                        this.CurrentScope.ODataUri);
                     this.jsonLightResourceSerializer.WriteNestedResourceInfoContextUrl(nestedResourceInfo, info);
                 }
 

@@ -373,7 +373,9 @@ namespace Microsoft.OData.Tests
             {
                 Path = path
             };
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(this.districtSet, "TestModel.District", true, odataUri);
+
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, this.districtSet, "TestModel.District", true, odataUri);
 
             Uri uri = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.Resource, info);
             uri.OriginalString.Should().Be(BuildExpectedContextUri("#Districts/$entity", false));
@@ -592,17 +594,19 @@ namespace Microsoft.OData.Tests
         [Fact]
         public void FeedContextUriShouldNotBeWrittenIfNotProvided()
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             var serializationInfo = new ODataResourceSerializationInfo { NavigationSourceName = "MyContainer.MyCities", NavigationSourceEntityTypeName = "TestModel.MyCity", ExpectedTypeName = "TestModel.MyCity" };
             var typeContext = ODataResourceTypeContext.Create(serializationInfo, null, null, null, true);
-            this.builderWithNoMetadataDocumentUri.BuildContextUri(ODataPayloadKind.ResourceSet, ODataContextUrlInfo.Create(typeContext, false)).Should().BeNull();
+            this.builderWithNoMetadataDocumentUri.BuildContextUri(ODataPayloadKind.ResourceSet, ODataContextUrlInfo.Create(settings, typeContext, false)).Should().BeNull();
         }
 
         [Fact]
         public void EntryContextUriShouldNotBeWrittenIfNotProvided()
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             var serializationInfo = new ODataResourceSerializationInfo { NavigationSourceName = "MyContainer.MyCities", NavigationSourceEntityTypeName = "TestModel.MyCity", ExpectedTypeName = "TestModel.MyCity" };
             var typeContext = ODataResourceTypeContext.Create(serializationInfo, null, null, null, true);
-            this.builderWithNoMetadataDocumentUri.BuildContextUri(ODataPayloadKind.Resource, ODataContextUrlInfo.Create(typeContext, true)).Should().BeNull();
+            this.builderWithNoMetadataDocumentUri.BuildContextUri(ODataPayloadKind.Resource, ODataContextUrlInfo.Create(settings, typeContext, true)).Should().BeNull();
         }
 
         [Fact]
@@ -615,7 +619,8 @@ namespace Microsoft.OData.Tests
         [Fact]
         public void ValueContextUriShouldNotBeWrittenIfNotProvided()
         {
-            var contextInfo = ODataContextUrlInfo.Create(new ODataProperty().ODataValue);
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            var contextInfo = ODataContextUrlInfo.Create(settings, new ODataProperty().ODataValue);
             this.builderWithNoMetadataDocumentUri.BuildContextUri(ODataPayloadKind.Property, contextInfo).Should().BeNull();
         }
 
@@ -716,8 +721,9 @@ namespace Microsoft.OData.Tests
 
         private Uri CreatePropertyContextUri(object value = null)
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             ODataProperty property = new ODataProperty() { Value = value };
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(property.ODataValue);
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, property.ODataValue);
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.Property, info);
             contextUrl.Should().NotBeNull();
             return contextUrl;
@@ -725,7 +731,8 @@ namespace Microsoft.OData.Tests
 
         private Uri CreateIndividualPropertyContextUri(ODataValue value, string resourcePath)
         {
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(value, new ODataUri() { Path = new ODataUriParser(edmModel, new Uri(ServiceDocumentUriString), new Uri(ServiceDocumentUriString + resourcePath)).ParsePath() });
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, value, new ODataUri() { Path = new ODataUriParser(edmModel, new Uri(ServiceDocumentUriString), new Uri(ServiceDocumentUriString + resourcePath)).ParsePath() });
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.IndividualProperty, info);
             contextUrl.Should().NotBeNull();
             return contextUrl;
@@ -733,33 +740,37 @@ namespace Microsoft.OData.Tests
 
         private Uri CreateFeedContextUri(string selectClause, string expandClause)
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             SelectExpandClause selectExpandClause = new ODataQueryOptionParser(edmModel, this.cityType, this.citySet, new Dictionary<string, string> { { "$expand", expandClause }, { "$select", selectClause } }).ParseSelectAndExpand();
             ODataResourceTypeContext typeContext = ODataResourceTypeContext.Create( /*serializationInfo*/null, this.citySet, this.cityType, this.cityType, true);
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, false, new ODataUri() { SelectAndExpand = selectExpandClause });
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, false, new ODataUri() { SelectAndExpand = selectExpandClause });
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.ResourceSet, info);
             return contextUrl;
         }
         private Uri CreateFeedContextUri(string applyClauseString)
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             ApplyClause applyClause = new ODataQueryOptionParser(edmModel, this.cityType, this.citySet, new Dictionary<string, string> { { "$apply", applyClauseString } }).ParseApply();
             ODataResourceTypeContext typeContext = ODataResourceTypeContext.Create( /*serializationInfo*/null, this.citySet, this.cityType, this.cityType, true);
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, false, new ODataUri() { Apply = applyClause });
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, false, new ODataUri() { Apply = applyClause });
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.ResourceSet, info);
             return contextUrl;
         }
 
         private Uri CreateEntryContextUri(string selectClause, string expandClause)
         {
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
             SelectExpandClause selectExpandClause = new ODataQueryOptionParser(edmModel, this.cityType, this.citySet, new Dictionary<string, string> { { "$expand", expandClause }, { "$select", selectClause } }).ParseSelectAndExpand();
             ODataResourceTypeContext typeContext = ODataResourceTypeContext.Create( /*serializationInfo*/null, this.citySet, this.cityType, this.cityType, true);
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, true, new ODataUri() { SelectAndExpand = selectExpandClause });
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, true, new ODataUri() { SelectAndExpand = selectExpandClause });
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.ResourceSet, info);
             return contextUrl;
         }
 
         private Uri CreateFeedContextUri(ODataResourceTypeContext typeContext, bool isResponse = true)
         {
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, false);
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, false);
             Uri contextUrl = isResponse ?
                 this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.ResourceSet, info) :
                 this.requestContextUriBuilder.BuildContextUri(ODataPayloadKind.ResourceSet, info);
@@ -768,7 +779,8 @@ namespace Microsoft.OData.Tests
 
         private Uri CreateEntryContextUri(ODataResourceTypeContext typeContext, bool isResponse = true)
         {
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, true);
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, true);
             Uri contextUrl = isResponse ?
                 this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.Resource, info) :
                 this.requestContextUriBuilder.BuildContextUri(ODataPayloadKind.Resource, info);
@@ -792,7 +804,8 @@ namespace Microsoft.OData.Tests
 
         private Uri CreateDeltaResponseContextUri(ODataResourceTypeContext typeContext, ODataDeltaKind kind)
         {
-            ODataContextUrlInfo info = ODataContextUrlInfo.Create(typeContext, kind);
+            ODataMessageWriterSettings settings = new ODataMessageWriterSettings();
+            ODataContextUrlInfo info = ODataContextUrlInfo.Create(settings, typeContext, kind);
             Uri contextUrl = this.responseContextUriBuilder.BuildContextUri(ODataPayloadKind.Delta, info);
             contextUrl.Should().NotBeNull();
             return contextUrl;
