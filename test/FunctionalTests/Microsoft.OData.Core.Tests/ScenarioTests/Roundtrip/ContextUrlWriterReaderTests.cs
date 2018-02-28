@@ -16,6 +16,9 @@ using Microsoft.OData.UriParser;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Vocabularies;
 using Xunit;
+using Microsoft.OData.Edm.Csdl;
+using Microsoft.OData.Edm.Validation;
+using System.Xml;
 
 namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
 {
@@ -67,6 +70,8 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
         private EdmEntityType personType;
         private EdmEntityType employeeType;
         private EdmEntityType companyType;
+        private EdmEntityType workingGroupType;
+        private EdmEntityType peopleWorkingGroupsType;
         private EdmEntityType productType;
         private EdmEntityType productBookType;
         private EdmEntityType productCdType;
@@ -76,6 +81,8 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
         private EdmEntitySet employeeSet;
         private EdmEntitySet companySet;
         private EdmEntitySet peopleSet;
+        private EdmEntitySet workingGroupsSet;
+        private EdmSingleton peopleWorkingGroupsSingleton;
 
         private Uri testServiceRootUri;
 
@@ -164,12 +171,27 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
             companyType.AddProperty(new EdmStructuralProperty(companyType, "Division", new EdmComplexTypeReference(companyDivisionType, true)));
             this.model.AddElement(companyType);
 
+            workingGroupType = new EdmEntityType(TestNameSpace, "WorkingGroup");
+            var workingGroupIdProperty = new EdmStructuralProperty(workingGroupType, "WorkingGroupId", EdmCoreModel.Instance.GetInt32(false));
+            workingGroupType.AddProperty(workingGroupIdProperty);
+            workingGroupType.AddKeys(new IEdmStructuralProperty[] { workingGroupIdProperty });
+            workingGroupType.AddProperty(new EdmStructuralProperty(workingGroupType, "Name", EdmCoreModel.Instance.GetString(false)));
+            this.model.AddElement(workingGroupType);
+
+            peopleWorkingGroupsType = new EdmEntityType(TestNameSpace, "PeopleWorkingGroupsRoot");
+            this.model.AddElement(peopleWorkingGroupsType);
+
             this.peopleSet = new EdmEntitySet(defaultContainer, "People", personType);
             this.companySet = new EdmEntitySet(defaultContainer, "Companys", companyType);
             this.employeeSet = new EdmEntitySet(defaultContainer, "Employees", employeeType);
+            this.workingGroupsSet = new EdmEntitySet(defaultContainer, "WorkingGroups", workingGroupType);
             defaultContainer.AddElement(this.employeeSet);
             defaultContainer.AddElement(this.peopleSet);
             defaultContainer.AddElement(this.companySet);
+            defaultContainer.AddElement(this.workingGroupsSet);
+
+            this.peopleWorkingGroupsSingleton = new EdmSingleton(defaultContainer, "PeopleWorkingGroups", peopleWorkingGroupsType);
+            defaultContainer.AddElement(this.peopleWorkingGroupsSingleton);
 
             var associatedCompanyNavigation = employeeType.AddUnidirectionalNavigation(new EdmNavigationPropertyInfo
             {
@@ -179,6 +201,31 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
             });
 
             employeeSet.AddNavigationTarget(associatedCompanyNavigation, companySet);
+
+            var peopleNavigation = peopleWorkingGroupsType.AddUnidirectionalNavigation(new EdmNavigationPropertyInfo
+            {
+                Name = "People",
+                Target = personType,
+                TargetMultiplicity = EdmMultiplicity.Many,
+                ContainsTarget = true,
+            });
+
+            var workingGroupNavigation = peopleWorkingGroupsType.AddUnidirectionalNavigation(new EdmNavigationPropertyInfo
+            {
+                Name = "WorkingGroups",
+                Target = workingGroupType,
+                TargetMultiplicity = EdmMultiplicity.Many,
+                ContainsTarget = true,
+            });
+
+            var associatedWorkingGroupsNavigation = personType.AddUnidirectionalNavigation(new EdmNavigationPropertyInfo
+            {
+                Name = "AssociatedWorkingGroups",
+                Target = workingGroupType,
+                TargetMultiplicity = EdmMultiplicity.Many
+            });
+
+            peopleWorkingGroupsSingleton.AddNavigationTarget(associatedWorkingGroupsNavigation, peopleWorkingGroupsSingleton);
         }
 
         #region Cases
@@ -232,11 +279,11 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
         }
 
         // V4 Protocol Spec Chapters 10.2
-        //[Fact(Skip = "#622: Complete after Containment Feature Finished")]
-        //public void ContainedCollectionOfEntities()
-        //{
-
-        //}
+        [Fact]
+        public void ContainedCollectionOfEntities()
+        {
+            Assert.False(true);
+        }
 
         // V4 Protocol Spec Chapters 10.3: Not Contained Entity
         // Sample Rquest: http://host/service.svc/People(1)
@@ -277,18 +324,18 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
 
         // V4 Protocol Spec Chapters 10.3: Entity
         //
-        //[Fact(Skip = "#622: Complete after Containment Feature Finished")]
-        //public void ContainedEntity()
-        //{
+        [Fact]
+        public void ContainedEntity()
+        {
+            Assert.False(true);
+        }
 
-        //}
-
-        // V4 Protocol Spec Chapters 10.3: Singleton
-        //[Fact(Skip = "#622: Complete after Singleton Feature")]
-        //public void Singleton()
-        //{
-
-        //}
+        // V4 Protocol Spec Chapters 10.4: Singleton
+        [Fact]
+        public void Singleton()
+        {
+            Assert.False(true);
+        }
 
         // V4 Protocol Spec Chapters 10.5: Entity Collection Derived Entities
         // Sample Request: http://host/service/People/Model.Employee
@@ -693,6 +740,18 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
                     new ODataProperty {Name = "DateHired", Value = null},
                 },
             };
+
+            StringBuilder stringBuilder = new StringBuilder();
+            StringWriter stringWriter = new StringWriter(stringBuilder);
+
+            using (var writer = new XmlTextWriter(stringWriter))
+            {
+                IEnumerable<EdmError> errors;
+                CsdlWriter.TryWriteCsdl(this.model, writer, CsdlTarget.OData, out errors);
+            }
+
+            string modelAsString = stringBuilder.ToString();
+
             foreach (ODataFormat mimeType in mimeTypes)
             {
                 string payload, contentType;
@@ -710,6 +769,52 @@ namespace Microsoft.OData.Tests.ScenarioTests.Roundtrip
                     writer.WriteEnd();
                 },
                 string.Format("\"{0}$metadata#Employees(AssociatedCompany)/$entity\"", TestBaseUri),
+                out payload, out contentType);
+
+                this.ReadPayload(payload, contentType, model, omReader =>
+                {
+                    var reader = omReader.CreateODataResourceReader(this.employeeSet, this.employeeType);
+                    while (reader.Read()) { }
+                    Assert.Equal(ODataReaderState.Completed, reader.State);
+                });
+            }
+        }
+
+        // V4 Protocol Spec Chapter 10.10: Projected Expanded Entities (not contain select)
+        // Sample Request: http://host/service/Employees(0)?$expand=Company
+        // Context Url in Response: http://host/service/$metadata#Employees('0')/Company
+        [Fact]
+        public void ExpandedMultiSegmnentEntity()
+        {
+            ODataResource entry = new ODataResource()
+            {
+                TypeName = TestNameSpace + ".Employee",
+                Properties = new[]
+                {
+                    new ODataProperty {Name = "PersonId", Value = 1},
+                    new ODataProperty {Name = "Name", Value = "Test1"},
+                    new ODataProperty {Name = "Age", Value = 20},
+                    new ODataProperty {Name = "HomeAddress", Value = null},
+                    new ODataProperty {Name = "DateHired", Value = null},
+                },
+            };
+            foreach (ODataFormat mimeType in mimeTypes)
+            {
+                string payload, contentType;
+                this.WriteAndValidateContextUri(mimeType, model, omWriter =>
+                {
+                    var selectExpandClause = new ODataQueryOptionParser(this.model, this.employeeType, this.employeeSet, new Dictionary<string, string> { { "$expand", "AssociatedCompany" }, { "$select", "AssociatedCompany" } }).ParseSelectAndExpand();
+
+                    omWriter.Settings.ODataUri = new ODataUri()
+                    {
+                        ServiceRoot = this.testServiceRootUri,
+                        SelectAndExpand = selectExpandClause
+                    };
+                    var writer = omWriter.CreateODataResourceWriter(this.employeeSet, this.employeeType);
+                    writer.WriteStart(entry);
+                    writer.WriteEnd();
+                },
+                string.Format("\"{0}$metadata#Employees('0')/AssociatedCompany\"", TestBaseUri),
                 out payload, out contentType);
 
                 this.ReadPayload(payload, contentType, model, omReader =>
