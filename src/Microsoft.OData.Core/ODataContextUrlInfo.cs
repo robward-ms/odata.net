@@ -71,17 +71,22 @@ namespace Microsoft.OData
         /// <summary>
         /// Create ODataContextUrlInfo for OdataValue.
         /// </summary>
+        /// <param name="settings">The writer settings.</param>
         /// <param name="value">The ODataValue to be used.</param>
         /// <param name="odataUri">The odata uri info for current query.</param>
         /// <param name="model">The model used to handle unsigned int conversions.</param>
         /// <returns>The generated ODataContextUrlInfo.</returns>
-        internal static ODataContextUrlInfo Create(ODataValue value, ODataUri odataUri = null, IEdmModel model = null)
+        internal static ODataContextUrlInfo Create(
+            ODataMessageWriterSettings settings,
+            ODataValue value,
+            ODataUri odataUri = null,
+            IEdmModel model = null)
         {
             return new ODataContextUrlInfo()
             {
                 TypeName = GetTypeNameForValue(value, model),
                 ResourcePath = ComputeResourcePath(odataUri),
-                QueryClause = ComputeQueryClause(odataUri),
+                QueryClause = ComputeQueryClause(odataUri, settings),
                 IsUndeclared = ComputeIfIsUndeclared(odataUri)
             };
         }
@@ -113,12 +118,18 @@ namespace Microsoft.OData
         /// <summary>
         /// Create ODataContextUrlInfo from basic information
         /// </summary>
+        /// <param name="settings">The writer settings.</param>
         /// <param name="navigationSource">Navigation source for current element.</param>\
         /// <param name="expectedEntityTypeName">The expectedEntity for current element.</param>
         /// <param name="isSingle">Whether target is single item.</param>
         /// <param name="odataUri">The odata uri info for current query.</param>
         /// <returns>The generated ODataContextUrlInfo.</returns>
-        internal static ODataContextUrlInfo Create(IEdmNavigationSource navigationSource, string expectedEntityTypeName, bool isSingle, ODataUri odataUri)
+        internal static ODataContextUrlInfo Create(
+            ODataMessageWriterSettings settings,
+            IEdmNavigationSource navigationSource,
+            string expectedEntityTypeName,
+            bool isSingle,
+            ODataUri odataUri)
         {
             EdmNavigationSourceKind kind = navigationSource.NavigationSourceKind();
             string navigationSourceEntityType = navigationSource.EntityType().FullName();
@@ -131,7 +142,7 @@ namespace Microsoft.OData
                 IncludeFragmentItemSelector = isSingle && kind != EdmNavigationSourceKind.Singleton,
                 NavigationPath = ComputeNavigationPath(kind, odataUri, navigationSource.Name),
                 ResourcePath = ComputeResourcePath(odataUri),
-                QueryClause = ComputeQueryClause(odataUri),
+                QueryClause = ComputeQueryClause(odataUri, settings),
                 IsUndeclared = ComputeIfIsUndeclared(odataUri)
             };
         }
@@ -139,11 +150,16 @@ namespace Microsoft.OData
         /// <summary>
         /// Create ODataContextUrlInfo from ODataResourceTypeContext
         /// </summary>
+        /// <param name="settings">The writer settings.</param>
         /// <param name="typeContext">The ODataResourceTypeContext to be used.</param>
         /// <param name="isSingle">Whether target is single item.</param>
         /// <param name="odataUri">The odata uri info for current query.</param>
         /// <returns>The generated ODataContextUrlInfo.</returns>
-        internal static ODataContextUrlInfo Create(ODataResourceTypeContext typeContext, bool isSingle, ODataUri odataUri = null)
+        internal static ODataContextUrlInfo Create(
+            ODataMessageWriterSettings settings,
+            ODataResourceTypeContext typeContext,
+            bool isSingle,
+            ODataUri odataUri = null)
         {
             Debug.Assert(typeContext != null, "typeContext != null");
 
@@ -172,7 +188,7 @@ namespace Microsoft.OData
                 IncludeFragmentItemSelector = isSingle && typeContext.NavigationSourceKind != EdmNavigationSourceKind.Singleton,
                 NavigationPath = ComputeNavigationPath(typeContext.NavigationSourceKind, odataUri, typeContext.NavigationSourceName),
                 ResourcePath = ComputeResourcePath(odataUri),
-                QueryClause = ComputeQueryClause(odataUri),
+                QueryClause = ComputeQueryClause(odataUri, settings),
                 IsUndeclared = ComputeIfIsUndeclared(odataUri)
             };
         }
@@ -180,11 +196,16 @@ namespace Microsoft.OData
         /// <summary>
         /// Create contextUrlInfo for delta
         /// </summary>
+        /// <param name="settings">The writer settings.</param>
         /// <param name="typeContext">The ODataResourceTypeContext to be used.</param>
         /// <param name="kind">The delta kind.</param>
         /// <param name="odataUri">The odata uri info for current query.</param>
         /// <returns>The generated ODataContextUrlInfo.</returns>
-        internal static ODataContextUrlInfo Create(ODataResourceTypeContext typeContext, ODataDeltaKind kind, ODataUri odataUri = null)
+        internal static ODataContextUrlInfo Create(
+            ODataMessageWriterSettings settings,
+            ODataResourceTypeContext typeContext,
+            ODataDeltaKind kind,
+            ODataUri odataUri = null)
         {
             Debug.Assert(typeContext != null, "typeContext != null");
 
@@ -205,7 +226,7 @@ namespace Microsoft.OData
                 contextUriInfo.NavigationPath = ComputeNavigationPath(typeContext.NavigationSourceKind, odataUri,
                     typeContext.NavigationSourceName);
                 contextUriInfo.ResourcePath = ComputeResourcePath(odataUri);
-                contextUriInfo.QueryClause = ComputeQueryClause(odataUri);
+                contextUriInfo.QueryClause = ComputeQueryClause(odataUri, settings);
                 contextUriInfo.IsUndeclared = ComputeIfIsUndeclared(odataUri);
             }
 
@@ -272,7 +293,7 @@ namespace Microsoft.OData
             return string.Empty;
         }
 
-        private static string ComputeQueryClause(ODataUri odataUri)
+        private static string ComputeQueryClause(ODataUri odataUri, ODataMessageWriterSettings settings)
         {
             if (odataUri != null)
             {
@@ -283,7 +304,7 @@ namespace Microsoft.OData
                 }
                 else
                 {
-                    return CreateSelectExpandContextUriSegment(odataUri.SelectAndExpand);
+                    return CreateSelectExpandContextUriSegment(odataUri.SelectAndExpand, settings);
                 }
             }
 
@@ -375,13 +396,17 @@ namespace Microsoft.OData
         /// Build the expand clause for a given level in the selectExpandClause
         /// </summary>
         /// <param name="selectExpandClause">the current level select expand clause</param>
+        /// <param name="settings">The writer settings.</param>
         /// <returns>the select and expand segment for context url in this level.</returns>
-        private static string CreateSelectExpandContextUriSegment(SelectExpandClause selectExpandClause)
+        private static string CreateSelectExpandContextUriSegment(SelectExpandClause selectExpandClause, ODataMessageWriterSettings settings)
         {
             if (selectExpandClause != null)
             {
+                Func<string, string, string> processSubResultFn = (string expandNode, string subExpand) =>
+                    ProcessSubExpand(expandNode, subExpand, settings);
+
                 string contextUri;
-                selectExpandClause.Traverse(ProcessSubExpand, CombineSelectAndExpandResult, out contextUri);
+                selectExpandClause.Traverse(processSubResultFn, CombineSelectAndExpandResult, out contextUri);
                 if (!string.IsNullOrEmpty(contextUri))
                 {
                     return ODataConstants.ContextUriProjectionStart + contextUri + ODataConstants.ContextUriProjectionEnd;
@@ -394,10 +419,18 @@ namespace Microsoft.OData
         /// <summary>Process sub expand node, contact with subexpand result</summary>
         /// <param name="expandNode">The current expanded node.</param>
         /// <param name="subExpand">Generated sub expand node.</param>
+        /// <param name="settings">The writer settings.</param>
         /// <returns>The generated expand string.</returns>
-        private static string ProcessSubExpand(string expandNode, string subExpand)
+        private static string ProcessSubExpand(string expandNode, string subExpand, ODataMessageWriterSettings settings)
         {
-            return string.IsNullOrEmpty(subExpand) ? null : expandNode + ODataConstants.ContextUriProjectionStart + subExpand + ODataConstants.ContextUriProjectionEnd;
+            // In 6.x, this code results in an incorrect context Url for section 10.9
+            // of the spec when there was no $select clause.
+            if (settings != null && settings.LibraryCompatibility <= ODataLibraryCompatibility.Version6)
+            {
+                return string.IsNullOrEmpty(subExpand) ? null : expandNode + ODataConstants.ContextUriProjectionStart + subExpand + ODataConstants.ContextUriProjectionEnd;
+            }
+
+            return string.IsNullOrEmpty(subExpand) ? expandNode : expandNode + ODataConstants.ContextUriProjectionStart + subExpand + ODataConstants.ContextUriProjectionEnd;
         }
 
         /// <summary>Create combined result string using selected items list and expand items list.</summary>
@@ -411,7 +444,8 @@ namespace Microsoft.OData
             {
                 foreach (var item in expandList)
                 {
-                    string expandNode = item.Substring(0, item.IndexOf(ODataConstants.ContextUriProjectionStart));
+                    int index = item.IndexOf(ODataConstants.ContextUriProjectionStart);
+                    string expandNode = item.Substring(0, index < 0 ? item.Length : index);
                     selectList.Remove(expandNode);
                 }
 
